@@ -17,10 +17,12 @@ var dataSet =  {
 };
 
 /**
- * GET endpoint.
- * @param  {string} 'key'
- * @return  {http} 'status'
- * @return {http} 'body'
+ * @name  Get Sum.
+ * @path  {GET} /metric/:key/sum
+ * @params {String} :key is the unique identifier to select the metric to sum.
+ * @response {object} An object with the sum value of the metric.
+ * @code {200} If request is succesful.
+ * @code {404} If the :key cannot be found. 
  */
 app.get('/metric/:key/sum', function (req, res) {
     const key = req.params.key;
@@ -44,11 +46,12 @@ app.get('/metric/:key/sum', function (req, res) {
 });
 
 /**
- * Post endpoint to create data.
- * @param  {string} 'key'
- * @param  {number} 'value'
- * @return {http} 'status'
- * @return {http} 'body'
+ * @name Post Metric Values.
+ * @path  {POST} /metric/:key
+ * @params  {String} :key is the unique identifier for the metric for which the value submitted.
+ * @response {object} An empty object if data is successfully added.
+ * @code {200} If request is succesful.
+ * @code {400} If there is a problem with the request. 
  */
 app.post('/metric/:key', function (req, res) {
     const key = req.params.key;
