@@ -16,7 +16,12 @@ var dataSet =  {
     // 
 };
 
-// Get endpoint. 
+/**
+ * GET endpoint.
+ * @param  {string} 'key'
+ * @return  {http} 'status'
+ * @return {http} 'body'
+ */
 app.get('/metric/:key/sum', function (req, res) {
     const key = req.params.key;
     if(key in dataSet) { // If Key is found in the dataSet.
@@ -24,21 +29,27 @@ app.get('/metric/:key/sum', function (req, res) {
         if (dataSet[key].length === 0) // If Key is found but doesn't have any values. 
             res.send('No existing values found for this key');
         else {
-            dataSet[key].forEach(dataValue => { // Key is found, iterate over and sum up values created within the last hour.
+            dataSet[key].forEach(dataValue => { // Key and values are found, iterate over and sum up values created within the last hour.
                 var diffMinutes = Math.abs(new Date() - dataValue.createdAt)/(1000*60);
                 if(diffMinutes < 60) {
                     sum += dataValue.value;
                 }
             });
-            res.send( {"value": sum } ); // sum of values created within last hour. 0 if all values are > 60 mins old.
+            res.send( {"value": sum } ); // Sum of values created within last hour. 0 if all values are > 60 mins old.
         }
     }
     else {
-        res.status(404).send('Key not found'); // Key not found in the dataset. 
+        res.status(404).send('Key not found'); // Key not found in the dataSet. 
     }
 });
 
-// POST method to create data.
+/**
+ * Post endpoint to create data.
+ * @param  {string} 'key'
+ * @param  {number} 'value'
+ * @return {http} 'status'
+ * @return {http} 'body'
+ */
 app.post('/metric/:key', function (req, res) {
     const key = req.params.key;
     if(!("value" in req.body)) { // If there isn't a 'value' in the body
@@ -48,21 +59,21 @@ app.post('/metric/:key', function (req, res) {
         res.status(400).send('Bad Request! "value" is not a number.');
     } else {
         var dataObject = {}; // Creating an object to push into the dataSet. 
-        dataObject.value = Math.round(req.body.value); // Rounded value from request body
-        dataObject.createdAt = new Date(); // Generating a createdAt field as a qualifying factor for sum. 
-        if(key in dataSet) { // If they key exists. 
+        dataObject.value = Math.round(req.body.value); 
+        dataObject.createdAt = new Date(); 
+        if(key in dataSet) { 
             dataSet[key].push(dataObject); // Add value to the existing key.
         }
-        else { // If key does not exist
+        else { 
             dataSet[key] = [dataObject]; // Create a new key with the value in the request.
         }
-        res.send({}); // Success 
+        res.send({}); 
     }
 });
 
 app.use(express.json()) // for parsing application/json
 
-//initializing the server on port 3001. 
+// Initializing the server on port 3001. 
 var server = app.listen('3001', () => {
     console.log('listening on port 3001');
 });

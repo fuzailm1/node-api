@@ -5,7 +5,7 @@ var rewire = require("rewire");
 
 var app = rewire("../index.js"); // Creates an instance of the server for testing, and enables injection of mock data.
 
-it('Get metric sum when key does not exist', function(done) {
+it('GET metric sum when key does not exist', function(done) {
     request('http://localhost:3001/metric/somekey/sum' , function(error, response, body) {
         expect(response.statusCode).to.equal(404);
         expect(body).to.equal('Key not found');
@@ -13,7 +13,7 @@ it('Get metric sum when key does not exist', function(done) {
     });
 });
 
-it('Get metric sum when key exists but no values exist', function(done) {
+it('GET metric sum when key exists but no values exist', function(done) {
     app.__set__("dataSet", {"somekey": []});
     request('http://localhost:3001/metric/somekey/sum' , function(error, response, body) {
         expect(body).to.equal('No existing values found for this key');
@@ -21,7 +21,7 @@ it('Get metric sum when key exists but no values exist', function(done) {
     });
 });
 
-it('Get metric sum when key exists and all values are within the last hour', function(done) {
+it('GET metric sum when key exists and all values are within the last hour', function(done) {
     // Creating mock dates date1 and date2 such that they're within the last one hour. 
     var date1 = new Date();
     var date2 = new Date();
@@ -35,7 +35,7 @@ it('Get metric sum when key exists and all values are within the last hour', fun
     });
 });
 
-it('Get metric sum when key exists and some values are within the last hour', function(done) {
+it('GET metric sum when key exists and some values are within the last hour', function(done) {
     // Creating mock dates date1 and date2 such that one of them is within an hour, while another is more than an hour ago. 
     var date1 = new Date();
     var date2 = new Date();
