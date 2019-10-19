@@ -18,10 +18,6 @@ var dataSet =  {
 
 // Get endpoint. 
 app.get('/metric/:key/sum', function (req, res) {
-    console.log(dataSet);
-    if (dataSet === {}) { // If empty, return empty object.
-        res.send('Empty Data Set.');
-    }
     const key = req.params.key;
     if(key in dataSet) { // If Key is found in the dataSet.
         var sum = 0;
@@ -43,7 +39,7 @@ app.get('/metric/:key/sum', function (req, res) {
 });
 
 // POST method to create data.
-app.post('/metrics/:key', function (req, res) {
+app.post('/metric/:key', function (req, res) {
     const key = req.params.key;
     if(!("value" in req.body)) { // If there isn't a 'value' in the body
         res.status(400).send('Bad Request! No "value" found.');
