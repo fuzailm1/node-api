@@ -2,7 +2,9 @@
 const express = require('express');
 const app = express();
 
-// Example data structure. 
+app.use(express.json()) // for parsing application/json
+
+// Example data structure. Initializing as an empty object. 
 var dataSet =  {
     // 
     //     "key": [
@@ -38,6 +40,27 @@ app.get('/metric/:key/sum', function (req, res) {
     else {
         res.status(404).send('Key not found'); // Key not found in the dataset. 
     }
+});
+
+// POST method to create data.
+app.post('/metrics/:key', function (req, res) {
+    const key = req.params.key;
+    if(!("value" in req.body)) { // If there isn't a 'value' in the body
+        res.status(400).send('Bad Request! No "value" found.');
+    }
+    else if (typeof(req.body.value) !== "number") { // If the "value" field doesn't contain a number
+        res.status(400).send('Bad Request! "value" is not a number.');
+    }
+    var dataObject = {}; // Creating an object to push into the dataSet. 
+    dataObject.value = Math.round(req.body.value); // Rounded value from request body
+    dataObject.createdAt = new Date(); // Generating a createdAt field as a qualifying factor for sum. 
+    if(key in dataSet) { // If they key exists. 
+        dataSet[key].push(dataObject); // Add value to the existing key.
+    }
+    else { // If key does not exist
+        dataSet[key] = [dataObject]; // Create a new key with the value in the request.
+    }
+    res.send({}); // Success 
 });
 
 app.use(express.json()) // for parsing application/json
