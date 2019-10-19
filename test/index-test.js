@@ -5,7 +5,7 @@ var rewire = require("rewire");
 
 var app = rewire("../index.js"); // Creates an instance of the server for testing, and enables injection of mock data.
 
-it('Get metrics when key does not exist', function(done) {
+it('Get metric sum when key does not exist', function(done) {
     request('http://localhost:3001/metric/somekey/sum' , function(error, response, body) {
         expect(response.statusCode).to.equal(404);
         expect(body).to.equal('Key not found');
@@ -13,7 +13,7 @@ it('Get metrics when key does not exist', function(done) {
     });
 });
 
-it('Get metrics when key exists but no values exist', function(done) {
+it('Get metric sum when key exists but no values exist', function(done) {
     app.__set__("dataSet", {"somekey": []});
     request('http://localhost:3001/metric/somekey/sum' , function(error, response, body) {
         expect(body).to.equal('No existing values found for this key');
@@ -21,7 +21,7 @@ it('Get metrics when key exists but no values exist', function(done) {
     });
 });
 
-it('Get metrics when key exists and all values are within the last hour', function(done) {
+it('Get metric sum when key exists and all values are within the last hour', function(done) {
     // Creating mock dates date1 and date2 such that they're within the last one hour. 
     var date1 = new Date();
     var date2 = new Date();
@@ -35,7 +35,7 @@ it('Get metrics when key exists and all values are within the last hour', functi
     });
 });
 
-it('Get metrics when key exists and some values are within the last hour', function(done) {
+it('Get metric sum when key exists and some values are within the last hour', function(done) {
     // Creating mock dates date1 and date2 such that one of them is within an hour, while another is more than an hour ago. 
     var date1 = new Date();
     var date2 = new Date();
@@ -45,6 +45,56 @@ it('Get metrics when key exists and some values are within the last hour', funct
     app.__set__("dataSet", {"somekey": [{"value": 5, "createdAt": date1}, {"value": 7, "createdAt": date2}]});
     request('http://localhost:3001/metric/somekey/sum' , function(error, response, body) {
         expect(body).to.equal('{"value":7}');
+        done();
+    });
+});
+
+it('POST metric with appropriate value', function(done) {
+    request.post('http://localhost:3001/metric/newkey', {json: {"value": 5}}, function(error, response, body) {
+        expect(response.statusCode).to.equal(200);
+        expect(body).to.contain({});
+        done();
+    });
+});
+
+it('POST metric without a value', function(done) {
+    request.post('http://localhost:3001/metric/newkey', {json: {}}, function(error, response, body) {
+        expect(response.statusCode).to.equal(400);
+        expect(body).to.equal('Bad Request! No "value" found.');
+        done();
+    });
+});
+
+it('POST metric when value is not a number', function(done) {
+    request.post('http://localhost:3001/metric/newkey', {json: {"value": "string" }}, function(error, response, body) {
+        expect(response.statusCode).to.equal(400);
+        expect(body).to.equal('Bad Request! "value" is not a number.');
+        done();
+    });
+});
+
+it('POST metric when key exists and value is added', function(done) {
+    // Creating mock data within dataSet with newkey. 
+    var date = new Date();
+    date.setMinutes(date.getMinutes() - 30);
+    // Using rewire to inject mock data for dataSet for testing. 
+    app.__set__("dataSet", {"newkey": [{"value": 5, "createdAt": date}]});
+    request.post('http://localhost:3001/metric/newkey', {json: {"value": 6 }}, function(error, response, body) {
+        expect(response.statusCode).to.equal(200);
+        expect(body).to.contain({});
+        done();
+    });
+});
+
+it('POST metric when key does not exist and value is added', function(done) {
+    // Creating mock data within dataSet with newkey. 
+    var date = new Date();
+    date.setMinutes(date.getMinutes() - 30);
+    // Using rewire to inject mock data for dataSet for testing. 
+    app.__set__("dataSet", {"somekey": [{"value": 5, "createdAt": date}]});
+    request.post('http://localhost:3001/metric/newkey', {json: {"value": 6 }}, function(error, response, body) {
+        expect(response.statusCode).to.equal(200);
+        expect(body).to.contain({});
         done();
     });
 });

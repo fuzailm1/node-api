@@ -46,17 +46,18 @@ app.post('/metric/:key', function (req, res) {
     }
     else if (typeof(req.body.value) !== "number") { // If the "value" field doesn't contain a number
         res.status(400).send('Bad Request! "value" is not a number.');
+    } else {
+        var dataObject = {}; // Creating an object to push into the dataSet. 
+        dataObject.value = Math.round(req.body.value); // Rounded value from request body
+        dataObject.createdAt = new Date(); // Generating a createdAt field as a qualifying factor for sum. 
+        if(key in dataSet) { // If they key exists. 
+            dataSet[key].push(dataObject); // Add value to the existing key.
+        }
+        else { // If key does not exist
+            dataSet[key] = [dataObject]; // Create a new key with the value in the request.
+        }
+        res.send({}); // Success 
     }
-    var dataObject = {}; // Creating an object to push into the dataSet. 
-    dataObject.value = Math.round(req.body.value); // Rounded value from request body
-    dataObject.createdAt = new Date(); // Generating a createdAt field as a qualifying factor for sum. 
-    if(key in dataSet) { // If they key exists. 
-        dataSet[key].push(dataObject); // Add value to the existing key.
-    }
-    else { // If key does not exist
-        dataSet[key] = [dataObject]; // Create a new key with the value in the request.
-    }
-    res.send({}); // Success 
 });
 
 app.use(express.json()) // for parsing application/json
